@@ -6,15 +6,16 @@ function make2DArray(rows, cols) {
   return arr;
 }
 
+const GAME_STATE = ["PLAYING", "PAUSE", "WIN", "DEATH"];
+let currentGameState = 1;
 let grid;
-let rows;
-let cols;
-let gridSize;
+let rows, cols, gridSize;
 let cnvsX, cnvsY; // the position of main canvas
 let cnvs;
 let setCanvasSizeButton;
 let inputRow, inputCol;
 let userJSON;
+let playButton;
 
 function preload() {
   // Serialization
@@ -23,7 +24,6 @@ function preload() {
     rows = json.rows;
     cols = json.cols;
     gridSize = json.gridSize;
-
     userJSON = json;
   });
 }
@@ -59,14 +59,16 @@ function resizeMainCanvas() {
   } else {
     userJSON.rows = newRows;
     userJSON.cols = newCols;
-    const fs = require("fs");
-    const fileName = "./user.json";
-    const file = require(fileName);
-    fs.writeFile(fileName, JSON.stringify(file), function writeJSON(err) {
-      if (err) return console.log(err);
-      console.log(JSON.stringify(file));
-      console.log("writing to " + fileName);
-    });
+    $.post("resize", userJSON);
+  }
+}
+
+function changeGameState(state) {
+  currentGameState = state;
+  if (state === 1) {
+    playButton.html("Play");
+  } else if (state === 0) {
+    playButton.html("Pause");
   }
 }
 
@@ -91,44 +93,64 @@ function drawCanvasConfig() {
   setCanvasSizeButton.mousePressed(resizeMainCanvas);
 }
 
+function drawGameController() {
+  playButton = createButton("Play");
+  playButton.position(cnvsX, cnvsY - 90);
+  playButton.mousePressed(() => {
+    if (currentGameState === 0) {
+      changeGameState(1);
+    } else if (currentGameState === 1) {
+      changeGameState(0);
+    }
+  });
+}
+
 function setup() {
   setMainCanvas();
   drawCanvasConfig();
+  drawGameController();
 
   grid = make2DArray(rows, cols);
+  background(0);
   for (let i = 0; i < rows; i++) {
     for (let j = 0; j < cols; j++) {
       grid[i][j] = floor(random(2));
+      if (grid[i][j] === 0) {
+        fill(255);
+        square(j * gridSize, i * gridSize, gridSize);
+      }
     }
   }
 }
 
 function draw() {
-  // compute
-  let next = make2DArray(rows, cols);
-  for (let i = 0; i < rows; i++) {
-    for (let j = 0; j < cols; j++) {
-      let neighbors = checkNeighbors(grid, i, j);
-      let state = grid[i][j];
-      if (state === 0 && neighbors === 3) {
-        next[i][j] = 1;
-      } else if (state === 1 && (neighbors < 2 || neighbors > 3)) {
-        next[i][j] = 0;
-      } else {
-        next[i][j] = state;
+  if (currentGameState === 0) {
+    // compute
+    let next = make2DArray(rows, cols);
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < cols; j++) {
+        let neighbors = checkNeighbors(grid, i, j);
+        let state = grid[i][j];
+        if (state === 0 && neighbors === 3) {
+          next[i][j] = 1;
+        } else if (state === 1 && (neighbors < 2 || neighbors > 3)) {
+          next[i][j] = 0;
+        } else {
+          next[i][j] = state;
+        }
       }
     }
-  }
 
-  grid = next;
+    grid = next;
 
-  // render
-  background(0);
-  for (let i = 0; i < rows; i++) {
-    for (let j = 0; j < cols; j++) {
-      if (grid[i][j] === 0) {
-        fill(255);
-        square(j * gridSize, i * gridSize, gridSize);
+    // render
+    background(0);
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < cols; j++) {
+        if (grid[i][j] === 0) {
+          fill(255);
+          square(j * gridSize, i * gridSize, gridSize);
+        }
       }
     }
   }
