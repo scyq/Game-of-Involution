@@ -1,6 +1,6 @@
 {
   "name": "life-game",
-  "version": "1.0.0",
+  "version": 2,
   "description": "The involution game server",
   "main": "server.js",
   "scripts": {
