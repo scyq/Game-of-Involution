@@ -28,6 +28,13 @@ function preload() {
   });
 }
 
+/**
+ *
+ * @param {2D Array} grid
+ * @param {number} row
+ * @param {number} col
+ * @returns the number of colored neighbor
+ */
 function checkNeighbors(grid, row, col) {
   let neighbors = 0;
   for (let i = -1; i <= 1; i++) {
@@ -105,6 +112,30 @@ function drawGameController() {
   });
 }
 
+// if not click, then return null
+function getClickGrid() {
+  if (mouseIsPressed) {
+    let rowGrid = floor(mouseY / gridSize);
+    let colGrid = floor(mouseX / gridSize);
+    if (rowGrid < 0 || colGrid < 0) return null;
+    return createVector(rowGrid, colGrid);
+  }
+  return null;
+}
+
+/**
+ *
+ * @param {number} row
+ * @param {number} col
+ * @param {number} type
+ */
+function colorGrid(row, col, type) {
+  if (grid[row][col] !== type) {
+    console.log("here");
+    grid[row][col] = type;
+  }
+}
+
 function setup() {
   setMainCanvas();
   drawCanvasConfig();
@@ -124,6 +155,12 @@ function setup() {
 }
 
 function draw() {
+  // get user's input
+  let clickResult = getClickGrid();
+  if (clickResult) {
+    colorGrid(clickResult.x, clickResult.y, 1);
+  }
+
   if (currentGameState === 0) {
     // compute
     let next = make2DArray(rows, cols);
@@ -142,15 +179,15 @@ function draw() {
     }
 
     grid = next;
+  }
 
-    // render
-    background(0);
-    for (let i = 0; i < rows; i++) {
-      for (let j = 0; j < cols; j++) {
-        if (grid[i][j] === 0) {
-          fill(255);
-          square(j * gridSize, i * gridSize, gridSize);
-        }
+  // render
+  background(0);
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+      if (grid[i][j] === 0) {
+        fill(255);
+        square(j * gridSize, i * gridSize, gridSize);
       }
     }
   }
