@@ -117,7 +117,8 @@ function getClickGrid() {
   if (mouseIsPressed) {
     let rowGrid = floor(mouseY / gridSize);
     let colGrid = floor(mouseX / gridSize);
-    if (rowGrid < 0 || colGrid < 0) return null;
+    if (rowGrid < 0 || colGrid < 0 || rowGrid >= rows || colGrid >= cols)
+      return null;
     return createVector(rowGrid, colGrid);
   }
   return null;
@@ -127,12 +128,12 @@ function getClickGrid() {
  *
  * @param {number} row
  * @param {number} col
- * @param {number} type
+ * @param {number} team
  */
-function colorGrid(row, col, type) {
-  if (grid[row][col] !== type) {
+function colorGrid(row, col, team) {
+  if (grid[row][col] !== team) {
     console.log("here");
-    grid[row][col] = type;
+    grid[row][col] = team;
   }
 }
 
